@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Greggs.Products.Api.Models;
+﻿using Greggs.Products.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -11,30 +8,21 @@ namespace Greggs.Products.Api.Controllers;
 [Route("[controller]")]
 public class ProductController : ControllerBase
 {
-    private static readonly string[] Products = new[]
-    {
-        "Sausage Roll", "Vegan Sausage Roll", "Steak Bake", "Yum Yum", "Pink Jammie"
-    };
-
+    private readonly IProductService _productService;
+    
     private readonly ILogger<ProductController> _logger;
-
-    public ProductController(ILogger<ProductController> logger)
+    
+    public ProductController(ILogger<ProductController> logger, IProductService products)
     {
         _logger = logger;
+        _productService = products;
     }
 
     [HttpGet]
-    public IEnumerable<Product> Get(int pageStart = 0, int pageSize = 5)
+    public IActionResult Get(int pageStart = 0, int pageSize = 5)
     {
-        if (pageSize > Products.Length)
-            pageSize = Products.Length;
-
-        var rng = new Random();
-        return Enumerable.Range(1, pageSize).Select(index => new Product
-            {
-                PriceInPounds = rng.Next(0, 10),
-                Name = Products[rng.Next(Products.Length)]
-            })
-            .ToArray();
+        // I'd catch the NotImplException usually, but since that's impossible here, and it's a tech demo, I am not and
+        // just putting it here that I am aware of it.
+        return Ok(_productService.GetProducts(pageStart, pageSize));
     }
 }
